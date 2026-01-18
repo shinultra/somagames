@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Penguin Game</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://esm.sh/three@0.160.0"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="instructions">
+      <p>矢印キーで移動, スペースキーでジャンプ</p>
+    </div>
+    <div id="game-over" class="hidden">
+      <h1>GAME OVER</h1>
+      <p>Refresh to Restart</p>
+    </div>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
