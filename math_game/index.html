@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>わくわくさんすうゲーム</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>わくわく さんすう</h1>
+            <div class="mascot-container-large">
+                <img src="assets/mascot.png" alt="Mascot" class="mascot-img"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <div class="mascot-fallback" style="display:none; font-size: 100px;">🦉</div>
+            </div>
+            <button id="start-btn" class="btn-primary">スタート！</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="header">
+                <span id="score-display">スコア: 0</span>
+                <span id="question-count">もんだい: 1/10</span>
+            </div>
+            <div class="question-area">
+                <div id="mascot-container">
+                    <img src="assets/mascot.png" alt="Mascot" class="mascot-game"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div class="mascot-fallback" style="display:none; font-size: 60px;">🦉</div>
+                    <div class="speech-bubble" id="message-box">がんばってね！</div>
+                </div>
+                <div id="question-text" class="question">5 + 3 = ?</div>
+            </div>
+            <div class="input-area">
+                <input type="number" id="answer-input" placeholder="こたえ">
+                <button id="submit-btn" class="btn-primary">OK!</button>
+            </div>
+            <div id="feedback-overlay" class="overlay hidden">
+                <img id="feedback-img" src="" alt="Feedback"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <div class="feedback-fallback" style="display:none; font-size: 80px;">✨</div>
+                <div id="feedback-text">せいかい！</div>
+                <div id="correct-answer-display"></div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <h2>けっかはっぴょう！</h2>
+            <div id="final-score">10もんちゅう 8もん せいかい！</div>
+            <div id="review-list">
+                <!-- Review items will be injected here -->
+            </div>
+            <button id="restart-btn" class="btn-primary">もういちど あそぶ</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
