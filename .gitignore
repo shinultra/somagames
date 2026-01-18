@@ -1,0 +1,22 @@
+# System Files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+env/
+venv/
+
+# Build
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
