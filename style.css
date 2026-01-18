@@ -201,3 +201,9 @@ p.subtitle {
   --accent-glow: rgba(139, 92, 246, 0.2);
   --card-hover-border: rgba(139, 92, 246, 0.4);
 }
+
+.card.math {
+  --accent-color: #FF9F1C;
+  --accent-glow: rgba(255, 159, 28, 0.2);
+  --card-hover-border: rgba(255, 159, 28, 0.4);
+}
