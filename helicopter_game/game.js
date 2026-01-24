@@ -418,3 +418,193 @@ function gameLoop(timestamp) {
 assets.bg.onload = () => {
     ctx.drawImage(assets.bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
+
+// Audio System
+class SoundManager {
+    constructor() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.bgmOscs = [];
+        this.bgmGain = null;
+        this.isPlaying = false;
+    }
+
+    startBGM() {
+        if (this.isPlaying) return;
+        this.ctx.resume();
+        this.isPlaying = true;
+
+        this.bgmGain = this.ctx.createGain();
+        this.bgmGain.gain.value = 0.4;
+        this.bgmGain.connect(this.ctx.destination);
+
+        // 1. Dissonant Drone Layer
+        const osc1 = this.ctx.createOscillator();
+        osc1.type = 'sawtooth';
+        osc1.frequency.value = 55;
+
+        const osc2 = this.ctx.createOscillator();
+        osc2.type = 'sawtooth';
+        osc2.frequency.value = 59; // Faster 4Hz beat
+
+        // Filter for drone
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 300;
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(this.bgmGain);
+
+        // 2. High-Tension "Radar" Pulse Layer
+        const radarOsc = this.ctx.createOscillator();
+        radarOsc.type = 'sine';
+        radarOsc.frequency.value = 1200; // High pitch
+
+        const radarGain = this.ctx.createGain();
+        radarGain.gain.value = 0; // Starts silent, modulated by LFO
+
+        // LFO for Radar (Fast beeping)
+        const lfo = this.ctx.createOscillator();
+        lfo.type = 'square';
+        lfo.frequency.value = 6; // 6 pulses per second
+
+        const lfoGain = this.ctx.createGain();
+        lfoGain.gain.value = 0.05; // Volume of the beep
+
+        // Connect LFO to Radar Gain
+        // We need to map LFO (-1 to 1) to Gain (0 to 0.05)
+        // Standard LFO connection to AudioParam adds the value.
+        // If we connect Square LFO (-1/1) to Gain (base 0), we get -1 and 1. Negative gain is valid (phase inv) but we want simple on/off.
+        // Let's use a simpler approach: Connect LFO to a Gain that connects to the radarGain's gain? No.
+        // Let's just use the custom pulse logic or a simple connection implies:
+        // base value + lfo value.
+        // Set radarGain base to 0.05.
+        // LFO connects to radarGain.gain.
+        // Actually, let's keep it simple: Sawtooth modulation on filter cutoff is easier for tension.
+
+        // Let's go with a fast "Helicopter Rotor" like thumping sound + The High Radar.
+        // Rotor Sound: White Noise -> Lowpass Filter modulated by LFO.
+        const noiseBufferSize = this.ctx.sampleRate * 2;
+        const noiseBuffer = this.ctx.createBuffer(1, noiseBufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < noiseBufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+        noise.loop = true;
+
+        const noiseFilter = this.ctx.createBiquadFilter();
+        noiseFilter.type = 'lowpass';
+        noiseFilter.frequency.value = 100;
+
+        const rotorLFO = this.ctx.createOscillator();
+        rotorLFO.type = 'sawtooth';
+        rotorLFO.frequency.value = 12; // Fast rotor speed
+
+        const rotorLFOGain = this.ctx.createGain();
+        rotorLFOGain.gain.value = 300; // Filter modulation
+
+        rotorLFO.connect(rotorLFOGain);
+        rotorLFOGain.connect(noiseFilter.frequency);
+
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.value = 0.6;
+
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(this.bgmGain);
+
+        osc1.start();
+        osc2.start();
+        noise.start();
+        rotorLFO.start();
+
+        this.bgmOscs = [osc1, osc2, noise, rotorLFO];
+    }
+
+    stopBGM() {
+        if (!this.isPlaying) return;
+        this.bgmOscs.forEach(o => o.stop());
+        this.bgmOscs = [];
+        this.isPlaying = false;
+    }
+
+    playCrash() {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.5);
+
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+
+        // Noise burst for impact
+        const bufferSize = this.ctx.sampleRate * 0.5;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        noise.connect(noiseGain);
+        noiseGain.connect(this.ctx.destination);
+
+        osc.start();
+        noise.start();
+        osc.stop(this.ctx.currentTime + 0.5);
+        noise.stop(this.ctx.currentTime + 0.5);
+    }
+
+    playScore() {
+        // High-tech ding
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, this.ctx.currentTime); // A5
+        osc.frequency.exponentialRampToValueAtTime(1760, this.ctx.currentTime + 0.1); // A6
+
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.5);
+    }
+}
+
+const soundManager = new SoundManager();
+
+// Hook into game events
+const originalStartGame = startGame;
+startGame = function () {
+    soundManager.startBGM();
+    originalStartGame();
+}
+
+const originalEndGame = endGame;
+endGame = function (isTimeUp) {
+    soundManager.stopBGM();
+    if (!isTimeUp) soundManager.playCrash(); // Play crash on failure
+    originalEndGame(isTimeUp);
+}
+
+const originalTriggerHit = triggerHitFeedback;
+triggerHitFeedback = function (text, color) {
+    if (color === '#ff3333') soundManager.playCrash(); // Penalty
+    else soundManager.playScore(); // Score
+    originalTriggerHit(text, color);
+}
