@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow Mountain Helicopter</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="hud">
+            <div id="score-container">SCORE: <span id="score">0</span></div>
+            <div id="time-container">TIME: <span id="time">90</span></div>
+        </div>
+
+        <div id="start-screen" class="overlay active">
+            <h1>SNOW MISSION</h1>
+            <p>Use Arrow Keys to Pilot</p>
+            <p>Avoid Trees!</p>
+            <p>Pass through Rock Gaps for Points (+100)</p>
+            <p>Hit Rocks = Penalty (-100)</p>
+            <button id="start-btn">LAUNCH MISSION</button>
+        </div>
+
+        <div id="game-over-screen" class="overlay">
+            <h1 id="game-over-title">GAME OVER</h1>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button id="restart-btn">RETRY</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>
