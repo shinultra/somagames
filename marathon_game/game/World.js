@@ -47,6 +47,13 @@ export class World {
     setupScene() {
         this.scene.background = new THREE.Color(0x87CEEB); // Sky blue
         this.scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+        // Ground (Grass)
+        const geometry = new THREE.PlaneGeometry(1000, 2000); // Widen ground
+        const material = new THREE.MeshStandardMaterial({ color: 0x2e8b57 }); // SeaGreen
+        const ground = new THREE.Mesh(geometry, material);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.z = -500; // Center along track
+        this.scene.add(ground);
     }
 
     setupLights() {

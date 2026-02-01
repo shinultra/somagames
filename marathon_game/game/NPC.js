@@ -133,9 +133,9 @@ export class NPC {
         this.parts.legL.rotation.x = Math.sin(time + Math.PI) * 0.8;
         this.parts.legR.rotation.x = Math.sin(time) * 0.8;
 
-        // Knees
-        this.parts.shinL.rotation.x = Math.max(0, Math.sin(time + Math.PI)) * 1.5;
-        this.parts.shinR.rotation.x = Math.max(0, Math.sin(time)) * 1.5;
+        // Knees (bend when leg is forward)
+        this.parts.shinL.rotation.x = Math.max(0, -Math.sin(time + Math.PI)) * 1.5;
+        this.parts.shinR.rotation.x = Math.max(0, -Math.sin(time)) * 1.5;
 
         // Bobbing
         this.parts.body.position.y = 1.4 + Math.abs(Math.sin(time * 2)) * 0.1;

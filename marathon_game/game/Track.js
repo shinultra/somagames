@@ -39,6 +39,52 @@ export class Track {
 
         // Random Obstacles
         this.createObstacles();
+
+        // Scenery (Trees & Mountains)
+        this.createScenery();
+    }
+
+    createScenery() {
+        // Trees
+        const treeTrunkGeo = new THREE.CylinderGeometry(0.5, 0.5, 2, 8);
+        const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+        const treeLeavesGeo = new THREE.ConeGeometry(2, 4, 8);
+        const treeLeavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+
+        for (let i = 0; i < 200; i++) {
+            const z = -Math.random() * this.length;
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const x = side * (this.width / 2 + 5 + Math.random() * 50);
+
+            const group = new THREE.Group();
+
+            const trunk = new THREE.Mesh(treeTrunkGeo, treeTrunkMat);
+            trunk.position.y = 1;
+            group.add(trunk);
+
+            const leaves = new THREE.Mesh(treeLeavesGeo, treeLeavesMat);
+            leaves.position.y = 3;
+            group.add(leaves);
+
+            group.position.set(x, 0, z);
+            this.scene.add(group);
+        }
+
+        // Mountains
+        const mountainGeo = new THREE.ConeGeometry(40, 60, 4);
+        const mountainMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 1.0 });
+
+        for (let i = 0; i < 20; i++) {
+            const z = -Math.random() * (this.length * 1.5) + this.length * 0.2;
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const x = side * (this.width + 50 + Math.random() * 100);
+
+            const mountain = new THREE.Mesh(mountainGeo, mountainMat);
+            mountain.position.set(x, 0, z);
+            // Randomize shape slightly
+            mountain.scale.set(1 + Math.random(), 1 + Math.random() * 0.5, 1 + Math.random());
+            this.scene.add(mountain);
+        }
     }
 
     createFinishLine() {
