@@ -1,4 +1,3 @@
-```javascript
 import * as THREE from 'three';
 
 export class NPC {
@@ -8,10 +7,10 @@ export class NPC {
         this.speed = 5 + Math.random() * 5; // vary speed
         this.trackWidth = trackWidth;
         this.track = track;
-        
+
         // Animation parts
         this.parts = {};
-        
+
         this.init(startZ, track);
     }
 
