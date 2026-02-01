@@ -5,43 +5,106 @@ export class Player {
         this.scene = scene;
         this.camera = camera;
         this.mesh = null;
-        this.speed = 10;
+        this.speed = 0;
         this.maxSpeed = 20;
         this.velocity = new THREE.Vector3();
         this.input = { forward: false, backward: false, left: false, right: false };
 
-        this.distance = 0;
+        // Animation parts
+        this.parts = {};
 
         this.init();
     }
 
     init() {
-        // Simple Robot Character
         const group = new THREE.Group();
 
-        // Body
-        const bodyGeo = new THREE.BoxGeometry(1, 1.5, 0.8);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.3, metalness: 0.8 });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 1.5;
-        group.add(body);
+        // Materials
+        const armorMat = new THREE.MeshStandardMaterial({
+            color: 0x00aaff,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+        const jointMat = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.7,
+            metalness: 0.5
+        });
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
 
-        // Head
-        const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const head = new THREE.Mesh(headGeo, headMat);
-        head.position.y = 2.8;
-        group.add(head);
+        // --- Body ---
+        const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.5);
+        const body = new THREE.Mesh(bodyGeo, armorMat);
+        body.position.y = 1.4; // Center of body
+        body.castShadow = true;
+        group.add(body);
+        this.parts.body = body;
+
+        // --- Head ---
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0, 0.7, 0); // Relative to body
+        body.add(headGroup);
+
+        const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+        const head = new THREE.Mesh(headGeo, armorMat);
+        headGroup.add(head);
 
         // Eyes
-        const eyeGeo = new THREE.SphereGeometry(0.1);
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-        const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-        eyeL.position.set(-0.2, 2.9, 0.45);
-        const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-        eyeR.position.set(0.2, 2.9, 0.45);
-        group.add(eyeL);
-        group.add(eyeR);
+        const eyeGeo = new THREE.BoxGeometry(0.15, 0.1, 0.05);
+        const eyeL = new THREE.Mesh(eyeGeo, glowMat);
+        eyeL.position.set(-0.15, 0.05, 0.3);
+        head.add(eyeL);
+        const eyeR = new THREE.Mesh(eyeGeo, glowMat);
+        eyeR.position.set(0.15, 0.05, 0.3);
+        head.add(eyeR);
+
+        // --- Limbs Helper ---
+        const createLimb = (w, h, d, x, y, z, mat) => {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+            mesh.position.set(0, -h / 2, 0); // Pivot at top
+            const pivot = new THREE.Group();
+            pivot.position.set(x, y, z);
+            pivot.add(mesh);
+            return { pivot, mesh };
+        };
+
+        // --- Arms ---
+        // Left Arm
+        const lArm = createLimb(0.25, 0.6, 0.25, -0.55, 0.5, 0, armorMat);
+        body.add(lArm.pivot);
+        const lForeArm = createLimb(0.2, 0.6, 0.2, 0, -0.6, 0, armorMat);
+        lArm.pivot.children[0].add(lForeArm.pivot); // Attach to mesh bottom
+        lForeArm.pivot.position.y = -0.6; // fix pos
+        this.parts.armL = lArm.pivot;
+        this.parts.foreArmL = lForeArm.pivot;
+
+        // Right Arm
+        const rArm = createLimb(0.25, 0.6, 0.25, 0.55, 0.5, 0, armorMat);
+        body.add(rArm.pivot);
+        const rForeArm = createLimb(0.2, 0.6, 0.2, 0, -0.6, 0, armorMat);
+        rArm.pivot.children[0].add(rForeArm.pivot);
+        rForeArm.pivot.position.y = -0.6;
+        this.parts.armR = rArm.pivot;
+        this.parts.foreArmR = rForeArm.pivot;
+
+        // --- Legs ---
+        // Left Leg
+        const lLeg = createLimb(0.3, 0.7, 0.3, -0.25, -0.6, 0, armorMat);
+        body.add(lLeg.pivot);
+        const lShin = createLimb(0.25, 0.7, 0.25, 0, -0.7, 0, armorMat);
+        lLeg.pivot.children[0].add(lShin.pivot);
+        lShin.pivot.position.y = -0.7;
+        this.parts.legL = lLeg.pivot;
+        this.parts.shinL = lShin.pivot;
+
+        // Right Leg
+        const rLeg = createLimb(0.3, 0.7, 0.3, 0.25, -0.6, 0, armorMat);
+        body.add(rLeg.pivot);
+        const rShin = createLimb(0.25, 0.7, 0.25, 0, -0.7, 0, armorMat);
+        rLeg.pivot.children[0].add(rShin.pivot);
+        rShin.pivot.position.y = -0.7;
+        this.parts.legR = rLeg.pivot;
+        this.parts.shinR = rShin.pivot;
 
         this.mesh = group;
         this.scene.add(this.mesh);
@@ -67,12 +130,12 @@ export class Player {
     update(delta, obstacles, trackWidth, npcs) {
         // Acceleration / Deceleration
         if (this.input.forward) {
-            this.speed = Math.min(this.speed + delta * 5, this.maxSpeed);
+            this.speed = Math.min(this.speed + delta * 15, this.maxSpeed);
         } else if (this.input.backward) {
-            this.speed = Math.max(this.speed - delta * 10, 0);
+            this.speed = Math.max(this.speed - delta * 20, 0);
         } else {
             // Natural friction
-            if (this.speed > 0) this.speed -= delta * 2;
+            if (this.speed > 0) this.speed -= delta * 5;
             if (this.speed < 0) this.speed = 0;
         }
 
@@ -98,34 +161,72 @@ export class Player {
         const latSpeed = 8 * delta;
         if (this.input.left) {
             this.mesh.position.x -= latSpeed;
-        }
-        if (this.input.right) {
+            // Tilt body
+            this.parts.body.rotation.z = 0.1;
+        } else if (this.input.right) {
             this.mesh.position.x += latSpeed;
+            this.parts.body.rotation.z = -0.1;
+        } else {
+            this.parts.body.rotation.z = 0;
         }
 
         // Wall limits
         const limit = trackWidth / 2 - 1;
         if (this.mesh.position.x < -limit) {
             this.mesh.position.x = -limit;
-            this.speed *= 0.8; // Wall friction
+            this.speed *= 0.8;
         }
         if (this.mesh.position.x > limit) {
             this.mesh.position.x = limit;
             this.speed *= 0.8;
         }
 
+        // --- Animation ---
+        this.updateAnimation(delta);
+
         // Camera Follow
-        this.camera.position.x = this.mesh.position.x;
+        this.camera.position.x = this.mesh.position.x * 0.8; // Lag slightly
         this.camera.position.z = this.mesh.position.z + 8;
         this.camera.position.y = this.mesh.position.y + 4;
         this.camera.lookAt(this.mesh.position.x, this.mesh.position.y + 2, this.mesh.position.z - 10);
+    }
+
+    updateAnimation(delta) {
+        if (this.speed < 0.1) {
+            // Idle Pose
+            this.parts.armL.rotation.x = THREE.MathUtils.lerp(this.parts.armL.rotation.x, 0, delta * 10);
+            this.parts.armR.rotation.x = THREE.MathUtils.lerp(this.parts.armR.rotation.x, 0, delta * 10);
+            this.parts.legL.rotation.x = THREE.MathUtils.lerp(this.parts.legL.rotation.x, 0, delta * 10);
+            this.parts.legR.rotation.x = THREE.MathUtils.lerp(this.parts.legR.rotation.x, 0, delta * 10);
+            return;
+        }
+
+        const time = Date.now() * 0.01 * this.speed * 0.2;
+
+        // Arms
+        this.parts.armL.rotation.x = Math.sin(time) * 0.8;
+        this.parts.armR.rotation.x = Math.sin(time + Math.PI) * 0.8;
+
+        // Forearms (bent slightly)
+        this.parts.foreArmL.rotation.x = Math.abs(Math.sin(time)) * 0.5 - 1;
+        this.parts.foreArmR.rotation.x = Math.abs(Math.sin(time + Math.PI)) * 0.5 - 1;
+
+        // Legs
+        this.parts.legL.rotation.x = Math.sin(time + Math.PI) * 0.8;
+        this.parts.legR.rotation.x = Math.sin(time) * 0.8;
+
+        // Knees (bend when leg is back)
+        this.parts.shinL.rotation.x = Math.max(0, Math.sin(time + Math.PI)) * 1.5;
+        this.parts.shinR.rotation.x = Math.max(0, Math.sin(time)) * 1.5;
+
+        // Bobbing
+        this.parts.body.position.y = 1.4 + Math.abs(Math.sin(time * 2)) * 0.1;
     }
 
     checkCollisions(newPos, objects) {
         if (!objects) return false;
         const playerRadius = 0.6;
         for (const obj of objects) {
-            // Support both direct meshes and objects with a mesh property
             const pos = obj.mesh ? obj.mesh.position : obj.position;
 
             const dx = newPos.x - pos.x;
