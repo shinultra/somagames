@@ -1,25 +1,27 @@
+```javascript
 import * as THREE from 'three';
 
 export class NPC {
-    constructor(scene, startZ, trackWidth) {
+    constructor(scene, startZ, trackWidth, track) {
         this.scene = scene;
         this.mesh = null;
         this.speed = 5 + Math.random() * 5; // vary speed
         this.trackWidth = trackWidth;
-
+        this.track = track;
+        
         // Animation parts
         this.parts = {};
-
-        this.init(startZ);
+        
+        this.init(startZ, track);
     }
 
-    init(startZ) {
+    init(startZ, track) {
         const group = new THREE.Group();
+        this.track = track;
 
         // Random color for variety
         const hue = Math.random();
         const mainColor = new THREE.Color().setHSL(hue, 0.8, 0.5);
-        const jointColor = new THREE.Color().setHSL(hue, 0.5, 0.3);
 
         const armorMat = new THREE.MeshStandardMaterial({
             color: mainColor,
@@ -37,18 +39,18 @@ export class NPC {
 
         // --- Head ---
         const headGroup = new THREE.Group();
-        headGroup.position.set(0, 0.7, 0); // Relative to body
+        headGroup.position.set(0, 0.7, 0);
         body.add(headGroup);
 
         const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
         const head = new THREE.Mesh(headGeo, armorMat);
         headGroup.add(head);
 
-        // Eyes (Simple geometric eyes)
+        // Eyes 
         const eyeGeo = new THREE.BoxGeometry(0.15, 0.1, 0.05);
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow eyes for NPCs
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-        eyeL.position.set(-0.15, 0.05, -0.3); // Facing forward (negative Z)
+        eyeL.position.set(-0.15, 0.05, -0.3);
         head.add(eyeL);
         const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
         eyeR.position.set(0.15, 0.05, -0.3);
@@ -57,7 +59,7 @@ export class NPC {
         // --- Limbs Helper ---
         const createLimb = (w, h, d, x, y, z, mat) => {
             const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-            mesh.position.set(0, -h / 2, 0); // Pivot at top
+            mesh.position.set(0, -h / 2, 0);
             const pivot = new THREE.Group();
             pivot.position.set(x, y, z);
             pivot.add(mesh);
@@ -104,15 +106,32 @@ export class NPC {
 
         this.mesh = group;
 
-        // Random start position
-        const x = (Math.random() - 0.5) * (this.trackWidth - 4);
-        this.mesh.position.set(x, 0, startZ);
+        // Random Position calculation
+        this.lateralOffset = (Math.random() - 0.5) * (this.trackWidth - 4);
+        this.zPos = startZ; // Keep track of Z separately
+
+        const state = this.track.getTrackState(this.zPos);
+        this.mesh.position.set(
+            state.x + this.lateralOffset,
+            state.y,
+            this.zPos
+        );
+        this.mesh.rotation.y = state.angleY;
 
         this.scene.add(this.mesh);
     }
 
     update(delta) {
-        this.mesh.position.z -= this.speed * delta;
+        this.zPos -= this.speed * delta;
+
+        const state = this.track.getTrackState(this.zPos);
+
+        this.mesh.position.set(
+            state.x + this.lateralOffset,
+            state.y,
+            this.zPos
+        );
+        this.mesh.rotation.y = state.angleY;
 
         this.updateAnimation(delta);
     }

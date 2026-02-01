@@ -155,7 +155,7 @@ export class Player {
         }
     }
 
-    update(delta, obstacles, trackWidth, npcs) {
+    update(delta, obstacles, trackWidth, npcs, trackRef) {
         // Acceleration / Deceleration
         if (this.input.forward) {
             this.speed = Math.min(this.speed + delta * 15, this.maxSpeed);
@@ -167,32 +167,22 @@ export class Player {
             if (this.speed < 0) this.speed = 0;
         }
 
-        const moveDist = this.speed * delta;
+        // Move along Z
+        let z = this.mesh.position.z - this.speed * delta;
 
-        // Potential new position
-        const testPos = this.mesh.position.clone();
-        testPos.z -= moveDist;
-
-        // Collision Check (Obstacles)
-        if (this.checkCollisions(testPos, obstacles)) {
-            this.speed = 2; // Hit obstacle
-        }
-        // Collision Check (NPCs)
-        else if (this.checkCollisions(testPos, npcs)) {
-            this.speed = Math.max(this.speed - 5, 2); // Hit NPC
-        }
-        else {
-            this.mesh.position.z = testPos.z;
-        }
-
-        // Lateral movement
+        // Lateral movement (Relative to track center)
         const latSpeed = 8 * delta;
+        // Store lateral offset in a separate property if possible, 
+        // but current x is absolute. We need to maintain "offset from center".
+        // Let's deduce current offset from current X and track X.
+        // Actually, cleaner to store `lateralOffset`.
+        if (this.lateralOffset === undefined) this.lateralOffset = 0;
+
         if (this.input.left) {
-            this.mesh.position.x -= latSpeed;
-            // Tilt body
+            this.lateralOffset -= latSpeed;
             this.parts.body.rotation.z = 0.1;
         } else if (this.input.right) {
-            this.mesh.position.x += latSpeed;
+            this.lateralOffset += latSpeed;
             this.parts.body.rotation.z = -0.1;
         } else {
             this.parts.body.rotation.z = 0;
@@ -200,23 +190,54 @@ export class Player {
 
         // Wall limits
         const limit = trackWidth / 2 - 1;
-        if (this.mesh.position.x < -limit) {
-            this.mesh.position.x = -limit;
+        if (this.lateralOffset < -limit) {
+            this.lateralOffset = -limit;
             this.speed *= 0.8;
         }
-        if (this.mesh.position.x > limit) {
-            this.mesh.position.x = limit;
+        if (this.lateralOffset > limit) {
+            this.lateralOffset = limit;
             this.speed *= 0.8;
+        }
+
+        // Calculate new World Position
+        const trackState = trackRef.getTrackState(z);
+        const newPos = new THREE.Vector3(
+            trackState.x + this.lateralOffset,
+            trackState.y,
+            z
+        );
+
+        // Collision Check (Obstacles)
+        if (this.checkCollisions(newPos, obstacles)) {
+            this.speed = 2;
+        }
+        // Collision Check (NPCs)
+        else if (this.checkCollisions(newPos, npcs)) {
+            this.speed = Math.max(this.speed - 5, 2);
+        }
+        else {
+            this.mesh.position.copy(newPos);
+            // Rotate to face track direction
+            this.mesh.rotation.y = trackState.angleY;
         }
 
         // --- Animation ---
         this.updateAnimation(delta);
 
         // Camera Follow
-        this.camera.position.x = this.mesh.position.x * 0.8; // Lag slightly
-        this.camera.position.z = this.mesh.position.z + 8;
-        this.camera.position.y = this.mesh.position.y + 4;
-        this.camera.lookAt(this.mesh.position.x, this.mesh.position.y + 2, this.mesh.position.z - 10);
+        // Smoothen camera
+        const camTargetX = this.mesh.position.x * 0.8;
+        const camTargetY = this.mesh.position.y + 4;
+        const camTargetZ = this.mesh.position.z + 8;
+
+        this.camera.position.x += (camTargetX - this.camera.position.x) * 0.1;
+        this.camera.position.y += (camTargetY - this.camera.position.y) * 0.1;
+        this.camera.position.z = camTargetZ; // Hard lock Z to keep up
+
+        // Look ahead
+        const lookZ = this.mesh.position.z - 10;
+        const lookState = trackRef.getTrackState(lookZ);
+        this.camera.lookAt(lookState.x, lookState.y + 2, lookZ);
     }
 
     updateAnimation(delta) {
