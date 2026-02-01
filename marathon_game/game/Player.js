@@ -6,7 +6,7 @@ export class Player {
         this.camera = camera;
         this.mesh = null;
         this.speed = 0;
-        this.maxSpeed = 15; // Reduced from 20
+        this.maxSpeed = 10; // Reduced to 10 (2/3)
         this.velocity = new THREE.Vector3();
         this.input = { forward: false, backward: false, left: false, right: false };
 

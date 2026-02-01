@@ -93,11 +93,8 @@ export class Track {
         const trackMesh = new THREE.Mesh(geometry, material);
         this.scene.add(trackMesh);
 
-        // Sidebar Walls (Generated similarly or just placed objects)
-        // Let's generate them as separate objects for collision reference if needed, 
-        // or just visual strips. For existing collision logic, walls were simpler.
-        // Let's generate "Wall" meshes along the sides.
-        this.createWallMesh();
+        // Sidebar Walls (Hidden visually, but logic in Player handles collision)
+        // this.createWallMesh();
     }
 
     createWallMesh() {
@@ -170,28 +167,46 @@ export class Track {
         poleR.rotation.y = state.angleY;
         this.scene.add(poleR);
 
+        // Goal Text Texture
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffd700'; // Match pole color
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = 'bold 80px Arial';
+        ctx.fillStyle = 'red';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('ゴール', canvas.width / 2, canvas.height / 2);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const bannerMat = new THREE.MeshBasicMaterial({ map: texture });
+
         const bannerGeo = new THREE.BoxGeometry(this.width, 2, 1);
-        const banner = new THREE.Mesh(bannerGeo, poleMat);
+        const banner = new THREE.Mesh(bannerGeo, bannerMat);
         banner.position.set(state.x, state.y + 9, z);
         banner.rotation.y = state.angleY;
         this.scene.add(banner);
     }
 
     createObstacles() {
-        const obsGeo = new THREE.BoxGeometry(2, 2, 2);
-        const obsMat = new THREE.MeshStandardMaterial({ color: 0xff9900 });
+        // Dirt Mound (Hemisphere-ish)
+        const obsGeo = new THREE.SphereGeometry(1.5, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const obsMat = new THREE.MeshStandardMaterial({
+            color: 0x8b4513, // SaddleBrown
+            roughness: 1.0
+        });
 
         for (let i = 0; i < 50; i++) {
             const z = -Math.random() * (this.length - 20) - 10;
-            // Get track center at this Z
             const state = this.getTrackState(z);
 
-            // Random offset from center
             const xOff = (Math.random() - 0.5) * (this.width - 4);
 
             const obs = new THREE.Mesh(obsGeo, obsMat);
-            // Position relative to track
-            obs.position.set(state.x + xOff, state.y + 1, z);
+            obs.position.set(state.x + xOff, state.y, z); // On ground
+            obs.scale.set(1.5, 0.8, 1.5); // Flattened mound
             obs.rotation.y = state.angleY;
 
             this.scene.add(obs);
