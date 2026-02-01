@@ -1,8 +1,10 @@
 import { World } from './World.js';
+import { SoundManager } from './SoundManager.js';
 
 export class Director {
     constructor() {
         this.world = new World();
+        this.soundManager = new SoundManager();
         this.isRunning = false;
         this.lastTime = 0;
         this.startTime = 0;
@@ -20,6 +22,9 @@ export class Director {
 
     startGame() {
         if (this.isRunning) return;
+
+        this.soundManager.startBGM(); // Start audio
+
         this.isRunning = true;
         this.startTime = performance.now();
         document.getElementById('start-screen').classList.add('hidden');
@@ -66,6 +71,9 @@ export class Director {
 
     gameWin(finalTime) {
         this.isRunning = false;
+        this.soundManager.stopBGM();
+        this.soundManager.playWinSound();
+
         const formattedTime = this.formatTime(finalTime);
         document.getElementById('result-time').innerText = `Time: ${formattedTime}`;
         document.getElementById('game-over-screen').classList.remove('hidden');
