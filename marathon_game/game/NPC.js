@@ -144,8 +144,8 @@ export class NPC {
         this.parts.armR.rotation.x = Math.sin(time + Math.PI) * 0.8;
 
         // Forearms
-        this.parts.foreArmL.rotation.x = Math.abs(Math.sin(time)) * 0.5 - 1;
-        this.parts.foreArmR.rotation.x = Math.abs(Math.sin(time + Math.PI)) * 0.5 - 1;
+        this.parts.foreArmL.rotation.x = Math.abs(Math.sin(time)) * 0.5 + 0.5;
+        this.parts.foreArmR.rotation.x = Math.abs(Math.sin(time + Math.PI)) * 0.5 + 0.5;
 
         // Legs
         this.parts.legL.rotation.x = Math.sin(time + Math.PI) * 0.8;

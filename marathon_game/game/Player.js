@@ -256,9 +256,10 @@ export class Player {
         this.parts.armL.rotation.x = Math.sin(time) * 0.8;
         this.parts.armR.rotation.x = Math.sin(time + Math.PI) * 0.8;
 
-        // Forearms (bent slightly)
-        this.parts.foreArmL.rotation.x = Math.abs(Math.sin(time)) * 0.5 - 1;
-        this.parts.foreArmR.rotation.x = Math.abs(Math.sin(time + Math.PI)) * 0.5 - 1;
+        // Forearms (bent slightly forward)
+        // Positive rotation on X bends forward (from -Y to -Z)
+        this.parts.foreArmL.rotation.x = Math.abs(Math.sin(time)) * 0.5 + 0.5;
+        this.parts.foreArmR.rotation.x = Math.abs(Math.sin(time + Math.PI)) * 0.5 + 0.5;
 
         // Legs
         this.parts.legL.rotation.x = Math.sin(time + Math.PI) * 0.8;
