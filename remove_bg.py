@@ -45,4 +45,4 @@ def remove_background_flood(input_path, output_path, tolerance=30):
 
 base_dir = "/Users/kshingu/antigravity/helicopter_game"
 # Only process helicopter this time
-remove_background_flood(os.path.join(base_dir, "helicopter.png"), os.path.join(base_dir, "helicopter.png"))
+remove_background_flood(os.path.join(base_dir, "tree.png"), os.path.join(base_dir, "tree.png"))
