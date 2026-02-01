@@ -24,6 +24,9 @@ export class Track {
 
         // Scenery (Trees & Mountains)
         this.createScenery();
+
+        // Spectators
+        this.createSpectators();
     }
 
     // Returns the track's Center X, Floor Y, and rotation angles at a given Z
@@ -260,6 +263,52 @@ export class Track {
             mountain.position.set(state.x + xOff, -5, z); // Lower base
             mountain.scale.set(1 + Math.random(), 1 + Math.random() * 0.5, 1 + Math.random());
             this.scene.add(mountain);
+        }
+    }
+
+    createSpectators() {
+        const bodyGeo = new THREE.BoxGeometry(0.5, 0.8, 0.3);
+        const headGeo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+        const armGeo = new THREE.BoxGeometry(0.15, 0.4, 0.15);
+
+        for (let i = 0; i < 100; i++) {
+            const z = -Math.random() * (this.length - 10);
+            const state = this.getTrackState(z);
+
+            // Place on sides (closer than trees)
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const xOff = side * (this.width / 2 + 2 + Math.random() * 3);
+
+            const group = new THREE.Group();
+
+            // Random Color
+            const color = new THREE.Color().setHSL(Math.random(), 0.8, 0.5);
+            const mat = new THREE.MeshStandardMaterial({ color: color });
+
+            const body = new THREE.Mesh(bodyGeo, mat);
+            body.position.y = 0.9;
+            group.add(body);
+
+            const head = new THREE.Mesh(headGeo, mat);
+            head.position.y = 1.6;
+            group.add(head);
+
+            // Arms Up "Cheering"
+            const armL = new THREE.Mesh(armGeo, mat);
+            armL.position.set(-0.35, 1.4, 0);
+            armL.rotation.z = Math.PI / 4; // Up-Left
+            group.add(armL);
+
+            const armR = new THREE.Mesh(armGeo, mat);
+            armR.position.set(0.35, 1.4, 0);
+            armR.rotation.z = -Math.PI / 4; // Up-Right
+            group.add(armR);
+
+            group.position.set(state.x + xOff, state.y, z);
+            // Face the track
+            group.lookAt(state.x, state.y + 1, z);
+
+            this.scene.add(group);
         }
     }
 }
