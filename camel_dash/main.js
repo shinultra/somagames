@@ -2,8 +2,8 @@
 const CONFIG = {
     gameDuration: 60, // seconds
     scrollSpeed: 300, // pixels per second (background)
-    obstacleSpeed: 300, // pixels per second
-    obstacleSpawnRate: 1.5, // seconds between spawns
+    obstacleSpeed: 350, // pixels per second - slightly faster
+    obstacleSpawnRate: 0.5, // seconds between spawns - High difficulty
     playerSpeed: 400, // pixels per second
 };
 
@@ -80,6 +80,15 @@ function initGame() {
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn-fail').addEventListener('click', startGame);
     document.getElementById('restart-btn-win').addEventListener('click', startGame);
+
+    // Enter Key to Restart
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Enter') {
+            if (STATE.screen === 'GAME_OVER' || STATE.screen === 'WIN') {
+                startGame();
+            }
+        }
+    });
 
     // Initial Render
     resetGame();
