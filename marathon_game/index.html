@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Marathon Game</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Import map for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="game-container"></div>
+    <div id="ui-layer">
+        <div id="hud">
+            <div id="time">TIME: 00:00.00</div>
+            <div id="speed">SPEED: 0 km/h</div>
+            <div id="distance">DIST: 0 / 1000m</div>
+        </div>
+        <div id="start-screen" class="screen">
+            <h1>3D MARATHON</h1>
+            <p>Click to Start</p>
+            <div id="best-time">Best Time: --:--.--</div>
+        </div>
+        <div id="game-over-screen" class="screen hidden">
+            <h1 id="result-title">GOAL!</h1>
+            <p id="result-time">Time: 00:00.00</p>
+            <p id="new-record" class="hidden">おめでとう！ New Record!</p>
+            <button id="restart-btn">Play Again</button>
+        </div>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>
