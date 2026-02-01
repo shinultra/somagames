@@ -11,24 +11,29 @@ export class Director {
     }
 
     init() {
-        this.world.init();
+        try {
+            this.world.init();
 
-        const startScreen = document.getElementById('start-screen');
-        startScreen.addEventListener('click', () => {
-            this.startGame();
-        });
+            const startScreen = document.getElementById('start-screen');
+            startScreen.addEventListener('click', () => {
+                this.startGame();
+            });
 
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Enter') {
-                if (!startScreen.classList.contains('hidden')) {
-                    this.startGame();
-                } else if (!document.getElementById('game-over-screen').classList.contains('hidden')) {
-                    location.reload();
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Enter') {
+                    if (!startScreen.classList.contains('hidden')) {
+                        this.startGame();
+                    } else if (!document.getElementById('game-over-screen').classList.contains('hidden')) {
+                        location.reload();
+                    }
                 }
-            }
-        });
+            });
 
-        this.animate = this.animate.bind(this);
+            this.animate = this.animate.bind(this);
+        } catch (e) {
+            console.error(e);
+            document.getElementById('start-screen').innerHTML += `<p style="color:red; font-size:12px;">Error: ${e.message}</p>`;
+        }
     }
 
     startGame() {
