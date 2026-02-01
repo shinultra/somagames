@@ -52,10 +52,10 @@ export class Player {
         // Eyes
         const eyeGeo = new THREE.BoxGeometry(0.15, 0.1, 0.05);
         const eyeL = new THREE.Mesh(eyeGeo, glowMat);
-        eyeL.position.set(-0.15, 0.05, 0.3);
+        eyeL.position.set(-0.15, 0.05, -0.3);
         head.add(eyeL);
         const eyeR = new THREE.Mesh(eyeGeo, glowMat);
-        eyeR.position.set(0.15, 0.05, 0.3);
+        eyeR.position.set(0.15, 0.05, -0.3);
         head.add(eyeR);
 
         // --- Limbs Helper ---
