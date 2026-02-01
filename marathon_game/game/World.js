@@ -53,6 +53,7 @@ export class World {
         const ground = new THREE.Mesh(geometry, material);
         ground.rotation.x = -Math.PI / 2;
         ground.position.z = -500; // Center along track
+        ground.position.y = -0.05; // Lower slightly to prevent Z-fighting with track
         this.scene.add(ground);
     }
 

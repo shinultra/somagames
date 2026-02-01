@@ -6,7 +6,7 @@ export class Player {
         this.camera = camera;
         this.mesh = null;
         this.speed = 0;
-        this.maxSpeed = 20;
+        this.maxSpeed = 15; // Reduced from 20
         this.velocity = new THREE.Vector3();
         this.input = { forward: false, backward: false, left: false, right: false };
 
@@ -21,12 +21,12 @@ export class Player {
 
         // Materials
         const armorMat = new THREE.MeshStandardMaterial({
-            color: 0x00aaff,
-            roughness: 0.2,
-            metalness: 0.8
+            color: 0xc0c0c0, // Silver
+            roughness: 0.3,
+            metalness: 0.9
         });
-        const jointMat = new THREE.MeshStandardMaterial({
-            color: 0x333333,
+        const darkMat = new THREE.MeshStandardMaterial({
+            color: 0x444444,
             roughness: 0.7,
             metalness: 0.5
         });
@@ -35,27 +35,55 @@ export class Player {
         // --- Body ---
         const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.5);
         const body = new THREE.Mesh(bodyGeo, armorMat);
-        body.position.y = 1.4; // Center of body
+        body.position.y = 1.4;
         body.castShadow = true;
         group.add(body);
         this.parts.body = body;
 
+        // Chest Panel
+        const chestGeo = new THREE.BoxGeometry(0.6, 0.5, 0.1);
+        const chest = new THREE.Mesh(chestGeo, darkMat);
+        chest.position.set(0, 0.2, 0.25);
+        body.add(chest);
+
+        // Backpack (Battery)
+        const packGeo = new THREE.BoxGeometry(0.6, 0.8, 0.2);
+        const pack = new THREE.Mesh(packGeo, darkMat);
+        pack.position.set(0, 0, -0.35);
+        body.add(pack);
+
         // --- Head ---
         const headGroup = new THREE.Group();
-        headGroup.position.set(0, 0.7, 0); // Relative to body
+        headGroup.position.set(0, 0.7, 0);
         body.add(headGroup);
 
         const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
         const head = new THREE.Mesh(headGeo, armorMat);
         headGroup.add(head);
 
+        // Antenna
+        const antStemGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.3);
+        const antStem = new THREE.Mesh(antStemGeo, darkMat);
+        antStem.position.set(0, 0.45, 0);
+        head.add(antStem);
+        const antBulbGeo = new THREE.SphereGeometry(0.05);
+        const antBulb = new THREE.Mesh(antBulbGeo, glowMat);
+        antBulb.position.set(0, 0.15, 0);
+        antStem.add(antBulb);
+
+        // Ear Bolts
+        const earGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.7);
+        const ear = new THREE.Mesh(earGeo, darkMat);
+        ear.rotation.z = Math.PI / 2;
+        head.add(ear);
+
         // Eyes
         const eyeGeo = new THREE.BoxGeometry(0.15, 0.1, 0.05);
         const eyeL = new THREE.Mesh(eyeGeo, glowMat);
-        eyeL.position.set(-0.15, 0.05, -0.3);
+        eyeL.position.set(-0.15, 0.05, -0.31); // Face negative Z
         head.add(eyeL);
         const eyeR = new THREE.Mesh(eyeGeo, glowMat);
-        eyeR.position.set(0.15, 0.05, -0.3);
+        eyeR.position.set(0.15, 0.05, -0.31);
         head.add(eyeR);
 
         // --- Limbs Helper ---
