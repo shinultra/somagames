@@ -13,8 +13,19 @@ export class Director {
     init() {
         this.world.init();
 
-        document.getElementById('start-screen').addEventListener('click', () => {
+        const startScreen = document.getElementById('start-screen');
+        startScreen.addEventListener('click', () => {
             this.startGame();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Enter') {
+                if (!startScreen.classList.contains('hidden')) {
+                    this.startGame();
+                } else if (!document.getElementById('game-over-screen').classList.contains('hidden')) {
+                    location.reload();
+                }
+            }
         });
 
         this.animate = this.animate.bind(this);
